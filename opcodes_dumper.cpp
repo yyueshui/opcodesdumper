@@ -8,8 +8,8 @@
 */
 #include "sapi/embed/php_embed.h"
 #include <cstdio>
-
 #define BUFFER_LEN 40
+
 char *opname(zend_uchar opcode){
 	switch(opcode) {
 		case ZEND_NOP: return "ZEND_NOP"; break;
