@@ -1,8 +1,14 @@
+# opcodes_dumper Makefile 
+# laruence <laruence at gmail.com>
+
+include Config
+
 CC = gcc
-CFLAGS = 	-I/usr/local/include/php/ \
-            -I/usr/local/include/php/main \
-            -I/usr/local/include/php/Zend \
-            -I/usr/local/include/php/TSRM 
-LDFLAGS = -lstdc++ -L/usr/local/lib -lphp5
-ALL:
+
+CFLAGS  = $(shell $(PHP_CONFIG) --includes)
+LDFLAGS = -L$(shell $(PHP_CONFIG) --prefix)/lib -lstdc++ -lphp5
+
+all:
 	$(CC) -o opcodes_dumper opcodes_dumper.cpp $(CFLAGS) $(LDFLAGS)
+clean:
+	rm -rf opcodes_dumper 
