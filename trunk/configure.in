@@ -27,6 +27,8 @@ then
     AC_MSG_ERROR([could not found php-config, use --with-php-config to set])
 fi
 
+AC_MSG_RESULT($PHP_CONFIG)
+
 PREFIX=`$PHP_CONFIG --prefix 2>/dev/null | sed -e 's/\/$//g' `
 INCLUDES=`$PHP_CONFIG --includes 2>/dev/null | sed -e 's/\/$//g' `
 LIBRARIES=$PREFIX"/lib"

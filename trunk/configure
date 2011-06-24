@@ -2480,6 +2480,9 @@ echo "$as_me: error: could not found php-config, use --with-php-config to set" >
    { (exit 1); exit 1; }; }
 fi
 
+echo "$as_me:$LINENO: result: $PHP_CONFIG" >&5
+echo "${ECHO_T}$PHP_CONFIG" >&6
+
 PREFIX=`$PHP_CONFIG --prefix 2>/dev/null | sed -e 's/\/$//g' `
 INCLUDES=`$PHP_CONFIG --includes 2>/dev/null | sed -e 's/\/$//g' `
 LIBRARIES=$PREFIX"/lib"
