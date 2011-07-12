@@ -72,7 +72,7 @@ const char * format_znode(znode *n){
 }
 
 void dump_op(zend_op *op, int num){
-	printf("%5d  %5d %30s %040s %040s %040s\n", num, op->lineno,
+	printf("%5d  %5d %30s % 40s % 40s % 40s\n", num, op->lineno,
 			get_opname(op->opcode),
 			format_znode(&op->op1),
 			format_znode(&op->op2),
@@ -81,7 +81,8 @@ void dump_op(zend_op *op, int num){
 
 void dump_op_array(zend_op_array *op_array){
 	if(op_array) {
-		printf("%5s  %5s %30s %040s %040s %040s\n", "opnum", "line", "opcode", "op1", "op2", "result");
+    printf("%5s  %5s %30s % 40s % 40s % 40s\n", "opnum", "line", "opcode", "op1", "op2", "result");
+    printf("%5s  %5s %30s % 40s % 40s % 40s\n", "-----", "-----", "------------------------------", "----------------------------------------", "----------------------------------------", "----------------------------------------");
 		for(zend_uint i = 0; i < op_array->last; i++) {
 			dump_op(&op_array->opcodes[i], i);
 		}
