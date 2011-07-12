@@ -93,7 +93,7 @@ target_link_libraries(
 
 
 if( CMAKE_BUILD_TYPE STREQUAL "DEBUG" )
-  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_STRIP} ${PROJECT_NAME})
+  # Maybe add some other special debug commands here? Maybe add -ggdb switch?
 else()
-  
+  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_STRIP} ${PROJECT_NAME})
 endif()
