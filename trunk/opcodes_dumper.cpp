@@ -25,7 +25,6 @@
 
 const char * format_zval(zval *z) {
 	static char buffer[BUFFER_LEN];
-	int len;
 
 	switch(z->type) {
 		case IS_NULL:
@@ -82,9 +81,8 @@ void dump_op(zend_op *op, int num){
 
 void dump_op_array(zend_op_array *op_array){
 	if(op_array) {
-		int i;
 		printf("%5s  %5s %30s %040s %040s %040s\n", "opnum", "line", "opcode", "op1", "op2", "result");
-		for(i = 0; i < op_array->last; i++) {
+		for(zend_uint i = 0; i < op_array->last; i++) {
 			dump_op(&op_array->opcodes[i], i);
 		}
 	}
