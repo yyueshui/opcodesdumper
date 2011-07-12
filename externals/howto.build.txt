@@ -1,0 +1,44 @@
+1) Get latest version of PHP5
+2) extract it
+3) build it:
+
+
+export CXX="ccache g++"
+export CC="ccache gcc"
+
+
+rm -rf /tmp/usr_64 bld_64
+mkdir bld_64
+cd bld_64
+../configure --prefix=/tmp/usr_64 --disable-debug --disable-rpath --disable-all --disable-static --with-pic --with-layout=GNU --enable-embed=static --target=x86_64-linux-gnu 2>&1 | tee build.log.txt
+make -j4 2>&1 | tee -a build.log.txt
+make install 2>&1 | tee -a build.log.txt
+
+
+cd ..
+rm -rf /tmp/usr_32 bld_32
+mkdir bld_32
+cd bld_32
+../configure --prefix=/tmp/usr_32 --disable-debug --disable-rpath --disable-all --disable-static --with-pic --with-layout=GNU --enable-embed=static --target=i486-linux-gnu 2>&1 | tee build.log.txt
+make -j4 2>&1 | tee -a build.log.txt
+make install 2>&1 | tee -a build.log.txt
+
+
+4) copy all the necessary files:
+
+cd opcodes
+rm -rf externals/32 externals/64
+mkdir -p externals/32/include
+mkdir -p externals/32/lib
+mkdir -p externals/64/include
+mkdir -p externals/64/lib
+
+cd externals/32/include
+cp -r /tmp/usr_32/include/php/* .
+cd ../lib
+cp /tmp/usr_32/lib/*.a .
+
+cd ../../64/include
+cp -r /tmp/usr_64/include/php/* .
+cd ../lib
+cp /tmp/usr_64/lib/*.a .
