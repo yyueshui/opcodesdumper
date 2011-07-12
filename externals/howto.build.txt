@@ -42,3 +42,19 @@ cd ../../64/include
 cp -r /tmp/usr_64/include/php/* .
 cd ../lib
 cp /tmp/usr_64/lib/*.a .
+
+
+
+Building on WIN32:
+1) extract sources
+2) move into the php directory
+3)
+cscript win32\build\buildconf.js
+    + resolve all dependencies (for example I needed bison.exe, if you need win32 tools, just search for "gnuwin32 <toolname>" on Google)
+configure --enable-embed --disable-debug --disable-all 
+
+4) install it (that's tricky!)
+copy the 32bit linux libraries to win32
+copy main\config.w32.h (php source dir) to externals\win32\include\main
+copy Release_TS\php5embed.lib Release_TS\php5ts.dll to externals\win32\lib
+

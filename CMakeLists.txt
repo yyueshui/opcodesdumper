@@ -9,7 +9,10 @@ mark_as_advanced(CMAKE_CONFIGURATION_TYPES)
 project(opcodes_dumper)
 
 
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+if(WIN32)
+  set(branch "win32")
+  add_definitions(-DZEND_WIN32 -DPHP_WIN32 -D_USE_32BIT_TIME_T -DZTS)
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
   set(branch "64")
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^i.86$")
   set(branch "32")
@@ -35,6 +38,7 @@ find_library(
 
   NAMES
   libphp5.a
+  php5embed.lib
 
   PATHS
   ${PROJECT_SOURCE_DIR}/externals/${branch}/lib
@@ -83,13 +87,12 @@ add_executable(
 )
 
 
-target_link_libraries(
-  ${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} ${PHP_LIBRARY})
 
-  ${PHP_LIBRARY}
-  dl
-  resolv
-)
+
+if(NOT WIN32)
+  target_link_libraries(${PROJECT_NAME} dl resolv)
+endif()
 
 
 if( CMAKE_BUILD_TYPE STREQUAL "DEBUG" )
