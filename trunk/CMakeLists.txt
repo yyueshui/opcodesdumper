@@ -98,5 +98,7 @@ endif()
 if( CMAKE_BUILD_TYPE STREQUAL "DEBUG" )
   # Maybe add some other special debug commands here? Maybe add -ggdb switch?
 else()
-  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_STRIP} ${PROJECT_NAME})
+  if ( NOT WIN32 )
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_STRIP} ${PROJECT_NAME})
+  endif()
 endif()

@@ -11,19 +11,54 @@
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
   | Author: Laruence  <laruence@gmail.com>                               |
+  | Author: Steven Van Ingelgem  <steven@salvania.be>                    |
   +----------------------------------------------------------------------+
    $Id$
  */
 
+
 #include <cstdio>
+#include <string>
+#include <sstream>
 #include "./opcodes.h"
 #include <Zend/zend_compile.h>
 #include <sapi/embed/php_embed.h>
+
+
 #define BUFFER_LEN 40
 
 
+using namespace std;
 
-const char * format_zval(zval *z) {
+
+string str_replace(const string &search, const string &replace, const string &subject)
+{
+  string buffer;
+
+  int sealeng = search.length();
+  int strleng = subject.length();
+
+  if (sealeng==0)
+    return subject;//no change
+
+  for(int i=0, j=0; i<strleng; j=0 )
+  {
+    while (i+j<strleng && j<sealeng && subject[i+j]==search[j])
+      j++;
+    if (j==sealeng)//found 'search'
+    {
+      buffer.append(replace);
+      i+=sealeng;
+    }
+    else
+    {
+      buffer.append( &subject[i++], 1);
+    }
+  }
+  return buffer;
+}
+
+string format_zval(zval *z) {
 	static char buffer[BUFFER_LEN];
 
 	switch(z->type) {
@@ -40,8 +75,21 @@ const char * format_zval(zval *z) {
 			return buffer;
 
     case IS_STRING:
-			snprintf(buffer, BUFFER_LEN, "\"%s\"", z->value.str.val);
-			return buffer;
+      {
+        string new_el(z->value.str.val);
+
+        new_el = new_el.substr(0, BUFFER_LEN-2); // Optimize replacements for large strings
+        new_el = str_replace("\\", "\\\\", new_el);
+        new_el = str_replace("\"", "\\\"", new_el);
+        new_el = str_replace("$", "\\$", new_el);
+        new_el = str_replace("\n", "\\n", new_el);
+        new_el = str_replace("\r", "\\r", new_el);
+        new_el = str_replace("\t", "\\t", new_el);
+        new_el = str_replace("\b", "\\b", new_el);
+        new_el = str_replace("\v", "\\v", new_el);
+
+        return ("\"" + new_el.substr(0, BUFFER_LEN-2) + "\"").c_str();
+      }
 
     case IS_NULL:           return "NULL";
 		case IS_ARRAY:          return "Array()";
@@ -53,7 +101,7 @@ const char * format_zval(zval *z) {
 	}
 }
 
-const char * format_znode(znode *n){
+string format_znode(znode *n){
 	static char buffer[BUFFER_LEN];
 
 	switch (n->op_type) {
@@ -85,9 +133,9 @@ const char * format_znode(znode *n){
 void dump_op(zend_op *op, int num){
 	printf("%5d  %5d %30s % 40s % 40s % 40s\n", num, op->lineno,
 			get_opname(op->opcode),
-			format_znode(&op->op1),
-			format_znode(&op->op2),
-			format_znode(&op->result)) ;
+			format_znode(&op->op1).c_str(),
+			format_znode(&op->op2).c_str(),
+			format_znode(&op->result).c_str());
 }
 
 void dump_var_array(zend_op_array *op_array) {
