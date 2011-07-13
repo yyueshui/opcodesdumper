@@ -27,26 +27,29 @@ const char * format_zval(zval *z) {
 	static char buffer[BUFFER_LEN];
 
 	switch(z->type) {
-		case IS_NULL:
-			return "NULL";
+    case IS_BOOL:
+      if ( z->value.lval == 1 ) return "true";
+      else return "false";
+
 		case IS_LONG:
-		case IS_BOOL:
-			snprintf(buffer, BUFFER_LEN, "%d", z->value.lval);
-			return buffer;
+      snprintf(buffer, BUFFER_LEN, "%d", z->value.lval);
+      return buffer;
+
 		case IS_DOUBLE:
 			snprintf(buffer, BUFFER_LEN, "%f", z->value.dval);
 			return buffer;
-		case IS_STRING:
+
+    case IS_STRING:
 			snprintf(buffer, BUFFER_LEN, "\"%s\"", z->value.str.val);
 			return buffer;
-		case IS_ARRAY:
-		case IS_OBJECT:
-		case IS_RESOURCE:
-		case IS_CONSTANT:
-		case IS_CONSTANT_ARRAY:
-			return "";
-		default:
-			return "unknown";
+
+    case IS_NULL:           return "NULL";
+		case IS_ARRAY:          return "Array()";
+		case IS_OBJECT:         return "Object";
+		case IS_RESOURCE:       return "resource";
+    case IS_CONSTANT:       return "constant";
+		case IS_CONSTANT_ARRAY: return "const Array()";
+		default:                return "unknown";
 	}
 }
 
@@ -56,16 +59,24 @@ const char * format_znode(znode *n){
 	switch (n->op_type) {
 		case IS_CONST:
 			return format_zval(&n->u.constant);
-			break;
-		case IS_VAR:
+
+    case IS_VAR:
 			snprintf(buffer, BUFFER_LEN, "$%d",  n->u.var);
 			return buffer;
-			break;
-		case IS_TMP_VAR:
-			snprintf(buffer, BUFFER_LEN, "~%d",  n->u.var);
-			return buffer;
-			break;
-		default:
+
+    case IS_TMP_VAR:
+      snprintf(buffer, BUFFER_LEN, "~%d",  n->u.var);
+      return buffer;
+
+    case IS_UNUSED:
+      snprintf(buffer, BUFFER_LEN, ":%d",  n->u.var);
+      return buffer;
+
+    case IS_CV:
+      snprintf(buffer, BUFFER_LEN, "%%%d",  n->u.var);
+      return buffer;
+
+    default:
 			return "";
 			break;
 	}
@@ -79,13 +90,28 @@ void dump_op(zend_op *op, int num){
 			format_znode(&op->result)) ;
 }
 
-void dump_op_array(zend_op_array *op_array){
-	if(op_array) {
-    printf("%5s  %5s %30s % 40s % 40s % 40s\n", "opnum", "line", "opcode", "op1", "op2", "result");
-    printf("%5s  %5s %30s % 40s % 40s % 40s\n", "-----", "-----", "------------------------------", "----------------------------------------", "----------------------------------------", "----------------------------------------");
-		for(zend_uint i = 0; i < op_array->last; i++) {
-			dump_op(&op_array->opcodes[i], i);
-		}
+void dump_var_array(zend_op_array *op_array) {
+  if ( !op_array ) {
+    return;
+  }
+
+  printf("Variables:\n");
+  printf("----------\n");
+  for ( int i = 0; i < op_array->last_var; ++i ) {
+    printf("%%%d: '$%s'\n", i, op_array->vars[i].name);
+  }
+  printf("\n");
+}
+
+void dump_op_array(zend_op_array *op_array) {
+  if ( !op_array ) {
+    return;
+  }
+
+  printf("%5s  %5s %30s % 40s % 40s % 40s\n", "opnum", "line", "opcode", "op1", "op2", "result");
+  printf("%5s  %5s %30s % 40s % 40s % 40s\n", "-----", "-----", "------------------------------", "----------------------------------------", "----------------------------------------", "----------------------------------------");
+	for(zend_uint i = 0; i < op_array->last; ++i) {
+		dump_op(&op_array->opcodes[i], i);
 	}
 }
 
@@ -94,7 +120,7 @@ int main(int argc, char **argv){
 		printf("usage:  op_dumper <script>\n");
 		return 1;
 	}
-	printf("Script: %s\n", argv[1]);
+	printf("Script:\n-------\n%s\n\n", argv[1]);
 
 	PHP_EMBED_START_BLOCK(argc,argv);
 
@@ -111,6 +137,7 @@ int main(int argc, char **argv){
 		printf("Error parsing script: %s\n", file_handle.filename);
 		return 1;
 	}
+  dump_var_array(op_array);
 	dump_op_array(op_array);
 
 	PHP_EMBED_END_BLOCK();
